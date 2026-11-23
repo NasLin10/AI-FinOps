@@ -1,0 +1,154 @@
+{
+  "name": "task-decomposer",
+  "displayName": "Декомпозитор задач",
+  "description": "Превращает текст задачи в редактируемый план подзадач для передачи coding-агенту (прототип фронтенда).",
+  "version": "0.1.0",
+  "publisher": "decomposer-team",
+  "private": true,
+  "license": "UNLICENSED",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "main": "./dist/extension.js",
+  "activationEvents": [],
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "decomposer",
+          "title": "Декомпозитор",
+          "icon": "media/icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "decomposer": [
+        {
+          "type": "webview",
+          "id": "decomposer.sidebar",
+          "name": "Декомпозитор задач"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "decomposer.openPanel",
+        "title": "Декомпозитор: открыть в редакторе (широкий экран)"
+      },
+      {
+        "command": "decomposer.setToken",
+        "title": "Декомпозитор: задать токен доступа к backend"
+      },
+      {
+        "command": "decomposer.clearToken",
+        "title": "Декомпозитор: удалить токен доступа"
+      },
+      {
+        "command": "decomposer.resetData",
+        "title": "Декомпозитор: удалить сохранённые данные"
+      }
+    ],
+    "configuration": {
+      "title": "Декомпозитор задач",
+      "properties": {
+        "decomposer.apiBaseUrl": {
+          "type": "string",
+          "default": "http://localhost:8787",
+          "markdownDescription": "Адрес backend. В продакшене только `https://`; `http://` разрешён для localhost."
+        },
+        "decomposer.demoMode": {
+          "type": "boolean",
+          "default": true,
+          "markdownDescription": "Демо-режим без API: ответы берутся из встроенных сценариев. Пока backend не готов, оставьте включённым."
+        },
+        "decomposer.requestTimeoutSec": {
+          "type": "number",
+          "default": 100,
+          "minimum": 10,
+          "maximum": 300,
+          "description": "Таймаут запроса к backend, секунд."
+        },
+        "decomposer.models": {
+          "type": "array",
+          "description": "Список моделей, из которых пользователь выбирает доступные. Рекомендации строятся только из выбранных.",
+          "items": {
+            "type": "object",
+            "required": [
+              "id",
+              "displayName",
+              "tier"
+            ],
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "displayName": {
+                "type": "string"
+              },
+              "tier": {
+                "type": "string",
+                "enum": [
+                  "economy",
+                  "balanced",
+                  "premium"
+                ]
+              },
+              "notes": {
+                "type": "string"
+              }
+            }
+          },
+          "default": [
+            {
+              "id": "model-economy",
+              "displayName": "Экономичная (быстрая)",
+              "tier": "economy",
+              "notes": "Дешёвая и быстрая, слабый reasoning. Для небольших, чётко очерченных правок."
+            },
+            {
+              "id": "model-balanced",
+              "displayName": "Сбалансированная",
+              "tier": "balanced",
+              "notes": "Средняя цена и качество, умеренный reasoning. Для типовых задач в 1-2 модулях."
+            },
+            {
+              "id": "model-premium",
+              "displayName": "Премиальная (reasoning: high)",
+              "tier": "premium",
+              "notes": "Дорогая, сильный reasoning. Для архитектуры, интеграции, рискованных мест."
+            }
+          ]
+        }
+      }
+    }
+  },
+  "scripts": {
+    "dev:web": "vite --config webview/vite.config.mts",
+    "build:ext": "esbuild src/extension.ts --bundle --platform=node --format=cjs --external:vscode --target=node18 --sourcemap --outfile=dist/extension.js",
+    "build:web": "vite build --config webview/vite.config.mts",
+    "build": "npm run build:ext && npm run build:web",
+    "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p webview/tsconfig.json --noEmit",
+    "test": "node --import tsx --test tests/*.test.ts",
+    "package": "npm run build && vsce package --allow-missing-repository --skip-license --no-dependencies"
+  },
+  "dependencies": {
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.6",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@types/vscode": "1.85.0",
+    "@vitejs/plugin-react": "^6.3.0",
+    "@vscode/vsce": "^4.1.1",
+    "esbuild": "^0.28.2",
+    "tsx": "^4.23.15",
+    "typescript": "^5.9.3",
+    "vite": "^8.3.8"
+  }
+}
